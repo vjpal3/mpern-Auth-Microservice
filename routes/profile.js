@@ -8,19 +8,43 @@ const auth = require('../middleware/auth');
 // @access private
 
 router.post('/', auth, async (req, res) => {
-  const authid = req.user.id;
-  const { first_name, last_name, avatar, github, cohort } = req.body;
+  try {
+    const authid = req.user.id;
+    const { first_name, last_name, avatar, github, cohort } = req.body;
 
-  let userProfile = await pool.query(
-    'Insert into profile(authid, first_name, last_name, avatar, github, cohort)     values ($1, $2, $3, $4, $5, $6) RETURNING *',
-    [authid, first_name, last_name, avatar, github, cohort]
-  );
-  userProfile = userProfile.rows[0];
-  res.json(userProfile);
+    let userProfile = await pool.query(
+      'Insert into profile(authid, first_name, last_name, avatar, github, cohort) values ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [authid, first_name, last_name, avatar, github, cohort]
+    );
+    userProfile = userProfile.rows[0];
+    res.json(userProfile);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ errors: error });
+  }
 });
 
 //@route GET api/profiles/self
 // @desc get profile data of the logged in user
 // @access private
+router.get('/self', auth, async (req, res) => {
+  try {
+    const authid = req.user.id;
+    let loggedInUser = await pool.query(
+      'Select first_name, last_name, avatar, github, cohort from profile where authid = $1',
+      [authid]
+    );
+
+    if (!loggedInUser.rows.length) {
+      return res
+        .status(404)
+        .json({ errors: { login: 'Profile not available' } });
+    }
+    res.json(loggedInUser.rows[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ errors: error });
+  }
+});
 
 module.exports = router;
