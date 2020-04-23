@@ -1,10 +1,15 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
+const pool = require('../db');
+const jwt = require('jsonwebtoken');
+const secret = require('../config/default').secret;
+
 const router = express.Router();
 
-// @route POST /
-// @desc Register
-//@access public
-app.post('/', async (req, res) => {
+// @route POST /api/users
+// @desc Register user
+// @access public
+router.post('/', async (req, res) => {
   try {
     const { username, email } = req.body;
     let { password } = req.body;
@@ -41,10 +46,10 @@ app.post('/', async (req, res) => {
   }
 });
 
-// @route POST /login
+// @route POST /login/users/login
 // @desc route to authenticate login
 // @access public
-app.post('/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     let user = await pool.query(
@@ -78,3 +83,5 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ errors: error });
   }
 });
+
+module.exports = router;
