@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// @route POST /login/users/login
+// @route POST /api/users/login
 // @desc route to authenticate login
 // @access public
 router.post('/login', async (req, res) => {
