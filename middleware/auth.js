@@ -4,7 +4,6 @@ const secret = require('../config/default').secret;
 module.exports = (req, res, next) => {
   //get token from header
   const token = req.header('x-auth-token');
-
   if (!token) {
     return res
       .status(401)
