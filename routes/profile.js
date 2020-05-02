@@ -8,8 +8,19 @@ const auth = require('../middleware/auth');
 // @access private
 
 router.post('/', auth, async (req, res) => {
+  const authid = req.user.id;
   try {
-    const authid = req.user.id;
+    //Check if profile already exists
+    let profile = await pool.query(
+      'SELECT authid FROM profile WHERE authid=$1',
+      [authid]
+    );
+    if (profile.rows.length)
+      return res
+        .status(401)
+        .json({ errors: { profile: 'Profile already exists!' } });
+
+    // Create new profile
     const { first_name, last_name, avatar, github, cohort } = req.body;
 
     let userProfile = await pool.query(
@@ -20,14 +31,14 @@ router.post('/', auth, async (req, res) => {
     res.json(userProfile);
   } catch (error) {
     console.error(error.message);
-    res.status(500).json({ errors: error });
+    return res.status(500).json({ errors: error });
   }
 });
 
 //@route GET api/profiles/self
 // @desc get profile data of the logged in user
 // @access private
-router.get('/self', auth, async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const authid = req.user.id;
     let loggedInUser = await pool.query(
